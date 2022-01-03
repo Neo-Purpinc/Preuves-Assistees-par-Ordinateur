@@ -50,7 +50,7 @@ Definition empiler (l:pile) (e:Z) := e::l.
 
 Definition depiler (l:pile) :=
 match l with
-| nil => nil
+| nil => 9999::nil
 | a::b => b
 end.
 
@@ -77,7 +77,7 @@ match l with
           )
 end.
 
-Definition eval_postfixe (l:liste_postfixe) := eval_postfixe2 l pile_nouv.
+Definition eval_postfixe (l:liste_postfixe) := sommet(eval_postfixe2 l pile_nouv).
 
 (* Question 8 *)
 Eval compute in eval_postfixe exemple_3.
@@ -144,8 +144,28 @@ Lemma depiler_eval : forall (f:liste_postfixe),
 well_formed f -> forall p:pile, p=depiler(eval_postfixe2 f p).
 Proof.
 intros.
+generalize p.
+induction H; intros.
 simpl.
-
+reflexivity.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- IHwell_formed2.
+rewrite <- IHwell_formed1.
+reflexivity.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- IHwell_formed2.
+rewrite <- IHwell_formed1.
+reflexivity.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- IHwell_formed2.
+rewrite <- IHwell_formed1.
+reflexivity.
 Qed.
 
 (* Question 13 *)
@@ -155,35 +175,93 @@ well_formed f ->
 sommet (eval_postfixe2 e p) + sommet (eval_postfixe2 f (eval_postfixe2 e p))=
 sommet (eval_postfixe2 (e ++ (f ++ ((Plus_symb)::nil))) p).
 Proof.
+intros.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- depiler_eval.
+rewrite Zplus_comm.
+reflexivity.
+assumption.
 Qed.
 
 (* Question 14 *)
 Lemma lemma_minus : forall (e f:liste_postfixe), forall (p:pile),
 well_formed e ->
 well_formed f ->
-sommet (eval_postfixe2 e p) + sommet (eval_postfixe2 f (eval_postfixe2 e p))=
+sommet (eval_postfixe2 e p) - sommet (eval_postfixe2 f (eval_postfixe2 e p))=
 sommet (eval_postfixe2 (e ++ (f ++ ((Minus_symb)::nil))) p).
 Proof.
+intros.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- depiler_eval.
+reflexivity.
+assumption.
 Qed.
 
 Lemma lemma_mult: forall (e f:liste_postfixe), forall (p:pile),
 well_formed e ->
 well_formed f ->
-sommet (eval_postfixe2 e p) + sommet (eval_postfixe2 f (eval_postfixe2 e p))=
+sommet (eval_postfixe2 e p) * sommet (eval_postfixe2 f (eval_postfixe2 e p))=
 sommet (eval_postfixe2 (e ++ (f ++ ((Mult_symb)::nil))) p).
 Proof.
+intros.
+rewrite append_eval.
+rewrite append_eval.
+simpl.
+rewrite <- depiler_eval.
+rewrite Zmult_comm.
+reflexivity.
+assumption.
 Qed.
 
 (* Question 15 *)
-Lemma interp_ok : forall e:expr,
-eval_expr e = (eval_postfixe (translate e)).
-Proof.
-Qed.
-
 Lemma interp_ok' : forall e:expr, forall p:pile,
 eval_expr e = sommet (eval_postfixe2 (translate e) p).
 Proof.
+intros.
+generalize p.
+induction e.
+intros.
+simpl.
+rewrite <- lemma_plus.
+rewrite <- IHe1.
+rewrite <- IHe2.
+reflexivity.
+apply wf_ok.
+apply wf_ok.
+intros.
+simpl.
+rewrite <- lemma_minus.
+rewrite <- IHe1.
+rewrite <- IHe2.
+reflexivity.
+apply wf_ok.
+apply wf_ok.
+intros.
+simpl.
+rewrite <- lemma_mult.
+rewrite <- IHe1.
+rewrite <- IHe2.
+reflexivity.
+apply wf_ok.
+apply wf_ok.
+intros.
+simpl.
+reflexivity.
 Qed.
+
+Lemma interp_ok : forall e:expr,
+eval_expr e = (eval_postfixe (translate e)).
+Proof.
+intros.
+unfold eval_postfixe.
+apply interp_ok'.
+Qed.
+
+
 
 
 
